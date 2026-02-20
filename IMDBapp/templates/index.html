@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IMDB Control Panel</title>
+    <style>
+      :root {
+        --bg0: #07070a;
+        --bg1: #0c0c12;
+        --panel: rgba(255, 255, 255, 0.06);
+        --panel2: rgba(255, 255, 255, 0.08);
+        --stroke: rgba(255, 255, 255, 0.12);
+        --stroke2: rgba(255, 255, 255, 0.18);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.68);
+        --muted2: rgba(255, 255, 255, 0.48);
+        --gold: #f6c25b;
+        --gold2: #d9a441;
+        --danger: #ff6b6b;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        background:
+          radial-gradient(1200px 600px at 20% -10%, rgba(246, 194, 91, 0.18), transparent 60%),
+          radial-gradient(900px 500px at 100% 0%, rgba(120, 70, 255, 0.12), transparent 55%),
+          radial-gradient(800px 600px at 20% 120%, rgba(255, 80, 80, 0.10), transparent 55%),
+          linear-gradient(180deg, var(--bg0), var(--bg1));
+      }
+
+      .grain {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.10;
+        background-image:
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E");
+        mix-blend-mode: overlay;
+      }
+
+      .wrap {
+        padding: 28px 18px 40px;
+      }
+
+      .card {
+        max-width: 1150px;
+        margin: 0 auto;
+      }
+
+      .header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .subtitle {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--stroke);
+        background: rgba(0, 0, 0, 0.20);
+        color: var(--muted);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 99px;
+        background: var(--gold);
+        box-shadow: 0 0 14px rgba(246, 194, 91, 0.45);
+      }
+
+      form {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 12px 16px;
+        align-items: center;
+        padding: 16px;
+        border: 1px solid var(--stroke);
+        border-radius: 14px;
+        background: linear-gradient(180deg, var(--panel), rgba(0, 0, 0, 0.15));
+        backdrop-filter: blur(10px);
+      }
+
+      label {
+        font-weight: 650;
+        color: var(--muted);
+        letter-spacing: 0.02em;
+      }
+
+      input, select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--stroke);
+        border-radius: 12px;
+        font-size: 14px;
+        color: var(--text);
+        background: rgba(0, 0, 0, 0.35);
+        outline: none;
+      }
+
+      input:focus, select:focus {
+        border-color: rgba(246, 194, 91, 0.55);
+        box-shadow: 0 0 0 4px rgba(246, 194, 91, 0.14);
+      }
+
+      .actions {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 8px;
+      }
+
+      button, a.button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: 1px solid rgba(246, 194, 91, 0.35);
+        background: linear-gradient(180deg, rgba(246, 194, 91, 0.18), rgba(0, 0, 0, 0.15));
+        color: var(--text);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 650;
+        letter-spacing: 0.02em;
+        cursor: pointer;
+      }
+
+      button:hover, a.button:hover {
+        border-color: rgba(246, 194, 91, 0.60);
+        background: linear-gradient(180deg, rgba(246, 194, 91, 0.26), rgba(0, 0, 0, 0.12));
+      }
+
+      a.button.secondary {
+        border-color: var(--stroke2);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+      }
+
+      .error {
+        margin-top: 16px;
+        padding: 12px 14px;
+        border: 1px solid rgba(255, 107, 107, 0.40);
+        background: rgba(255, 107, 107, 0.10);
+        color: rgba(255, 255, 255, 0.92);
+        border-radius: 14px;
+      }
+
+      .meta {
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 13px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .meta strong {
+        color: var(--text);
+      }
+
+      .meta .small {
+        color: var(--muted2);
+        word-break: break-word;
+      }
+
+      .table-wrap {
+        margin-top: 16px;
+        border: 1px solid var(--stroke);
+        border-radius: 14px;
+        background: rgba(0, 0, 0, 0.20);
+        overflow: hidden;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      th, td {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 12px 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      tr:hover td {
+        background: rgba(246, 194, 91, 0.06);
+      }
+
+      a {
+        color: rgba(246, 194, 91, 0.90);
+      }
+
+      a:hover {
+        color: rgba(246, 194, 91, 1);
+      }
+
+      .title {
+        font-weight: 750;
+      }
+
+      .small { color: var(--muted2); font-size: 12px; }
+      .nowrap { white-space: nowrap; }
+
+      @media (max-width: 720px) {
+        .header { align-items: flex-start; flex-direction: column; }
+        form { grid-template-columns: 1fr; }
+        label { margin-top: 4px; }
+        .actions { justify-content: stretch; }
+        button, a.button { width: 100%; }
+        th:nth-child(4), td:nth-child(4),
+        th:nth-child(6), td:nth-child(6) { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grain"></div>
+    <div class="wrap">
+    <div class="card">
+      <div class="header">
+        <div>
+          <h1>IMDb Top 250</h1>
+          <div class="subtitle">A cinematic control panel for sorting, previewing and exporting your chart data</div>
+        </div>
+        <div class="badge"><span class="dot"></span> Local panel</div>
+      </div>
+
+      <form method="post" action="{{ url_for('preview') }}">
+        <label for="limit">How many movies</label>
+        <input id="limit" name="limit" type="number" min="1" max="250" value="{{ filters.limit }}" />
+
+        <label for="sort">Sort</label>
+        <select id="sort" name="sort">
+          {% for key, label in sort_options.items() %}
+            <option value="{{ key }}" {% if filters.sort == key %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="direction">Direction</label>
+        <select id="direction" name="direction">
+          <option value="desc" {% if filters.direction == 'desc' %}selected{% endif %}>Descending</option>
+          <option value="asc" {% if filters.direction == 'asc' %}selected{% endif %}>Ascending</option>
+        </select>
+
+        <div class="actions">
+          <button type="submit">Preview</button>
+          <a class="button secondary" href="{{ url_for('download_json', limit=filters.limit, sort=filters.sort, direction=filters.direction) }}">Download JSON</a>
+        </div>
+      </form>
+
+      {% if error %}
+        <div class="error">{{ error }}</div>
+      {% endif %}
+
+      {% if result %}
+        <div class="meta">
+          <div><strong>Source URL:</strong> <span class="small">{{ result.url }}</span></div>
+          <div><strong>Items:</strong> {{ result.count }}</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="nowrap">Rank</th>
+                <th>Title</th>
+                <th class="nowrap">Rating</th>
+                <th class="nowrap">Votes</th>
+                <th class="nowrap">Genre</th>
+                <th class="nowrap">Duration</th>
+                <th>URL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for m in result.movies %}
+                <tr>
+                  <td class="nowrap">{{ m.rank }}</td>
+                  <td>
+                    <div class="title">{{ m.alternateName or m.name }}</div>
+                    <div class="small">{{ m.name }}</div>
+                  </td>
+                  <td class="nowrap">{{ m.ratingValue }}</td>
+                  <td class="nowrap">{{ m.ratingCount }}</td>
+                  <td class="nowrap">{{ m.genre }}</td>
+                  <td class="nowrap">{{ m.duration }}</td>
+                  <td><a href="{{ m.url }}" target="_blank" rel="noreferrer">{{ m.url }}</a></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endif %}
+    </div>
+    </div>
+  </body>
+</html>
